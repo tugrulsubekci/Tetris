@@ -4,11 +4,12 @@ public class TetrisBlock : MonoBehaviour
 {
     private Transform goTransform;
     private float fallTime = 0.8f;
-    private float normalRepeatRate = 0.8f;
+    public static float normalRepeatRate = 0.8f;
     private float fastRepeatRate = 0.08f;
     public Vector3 rotationPoint;
     private int rotateAngle = 90;
-    private SpawnManager spawnManager;   
+    private SpawnManager spawnManager;  
+    private GameManager gameManager;
     
     private static int height = 20;
     private static int width = 10;
@@ -16,45 +17,15 @@ public class TetrisBlock : MonoBehaviour
 
     private void Start()
     {
+        gameManager = FindObjectOfType<GameManager>();
         spawnManager = FindObjectOfType<SpawnManager>();
         goTransform = GetComponent<Transform>();
         InvokeRepeating(nameof(VerticalMovement), fallTime, fallTime);
     }
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.LeftArrow)) // move left
-        {
-            goTransform.position += Vector3.left;
-            if (!ValidMove())
-            {
-                goTransform.position -= Vector3.left;
-            }
-        }
-        else if (Input.GetKeyDown(KeyCode.RightArrow)) // move right
-        {
-            goTransform.position += Vector3.right;
-            if (!ValidMove())
-            {
-                goTransform.position -= Vector3.right;
-            }
-        }
-        else if (Input.GetKeyDown(KeyCode.UpArrow)) // rotate
-        {
-            goTransform.RotateAround(transform.TransformPoint(rotationPoint), Vector3.forward, rotateAngle);
-            if (!ValidMove())
-            {
-                goTransform.RotateAround(transform.TransformPoint(rotationPoint), Vector3.forward, -rotateAngle);
-            }
-        }
-
-        if(Input.GetKey(KeyCode.DownArrow) && fallTime != fastRepeatRate) // fall fast
-        {
-            InvokeVerticalMovement(fastRepeatRate);
-        }
-        else if (!Input.GetKey(KeyCode.DownArrow) && fallTime != normalRepeatRate) // fall normal
-        {
-            InvokeVerticalMovement(normalRepeatRate);
-        }
+        TetrominoController();
+        FallDown();
     }
     void VerticalMovement() // falling down method
     {
@@ -137,6 +108,7 @@ public class TetrisBlock : MonoBehaviour
             Destroy(grid[j,i].gameObject);
             grid[j, i] = null;
         }
+        gameManager.AddScore(100);
     }
 
     void RowDown(int i)
@@ -152,6 +124,46 @@ public class TetrisBlock : MonoBehaviour
                     grid[j, y - 1].transform.position += Vector3.down;
                 }
             }
+        }
+    }
+
+    void TetrominoController()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftArrow)) // move left
+        {
+            goTransform.position += Vector3.left;
+            if (!ValidMove())
+            {
+                goTransform.position -= Vector3.left;
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.RightArrow)) // move right
+        {
+            goTransform.position += Vector3.right;
+            if (!ValidMove())
+            {
+                goTransform.position -= Vector3.right;
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.UpArrow)) // rotate
+        {
+            goTransform.RotateAround(transform.TransformPoint(rotationPoint), Vector3.forward, rotateAngle);
+            if (!ValidMove())
+            {
+                goTransform.RotateAround(transform.TransformPoint(rotationPoint), Vector3.forward, -rotateAngle);
+            }
+        }
+    }
+
+    void FallDown()
+    {
+        if (Input.GetKey(KeyCode.DownArrow) && fallTime != fastRepeatRate) // fall fast
+        {
+            InvokeVerticalMovement(fastRepeatRate);
+        }
+        else if (!Input.GetKey(KeyCode.DownArrow) && fallTime != normalRepeatRate) // fall normal
+        {
+            InvokeVerticalMovement(normalRepeatRate);
         }
     }
 }
